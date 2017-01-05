@@ -19,12 +19,10 @@ class ViewController: UIViewController {
     
     var gameSound: SystemSoundID = 0
     
-    let trivia: [[String : String]] = [
-        ["Question": "Only female koalas can whistle", "Answer": "False"],
-        ["Question": "Blue whales are technically whales", "Answer": "True"],
-        ["Question": "Camels are cannibalistic", "Answer": "False"],
-        ["Question": "All ducks are birds", "Answer": "True"]
-    ]
+    // Create instance of TriviaProvider struct, which includes an array of trivia question/answer dictionaries
+    
+    let triviaProvider = TriviaProvider()
+    
     
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet weak var trueButton: UIButton!
@@ -46,8 +44,8 @@ class ViewController: UIViewController {
     }
     
     func displayQuestion() {
-        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: trivia.count)
-        let questionDictionary = trivia[indexOfSelectedQuestion]
+        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaProvider.trivia.count)
+        let questionDictionary = triviaProvider.trivia[indexOfSelectedQuestion]
         questionField.text = questionDictionary["Question"]
         playAgainButton.isHidden = true
     }
@@ -68,7 +66,7 @@ class ViewController: UIViewController {
         // Increment the questions asked counter
         questionsAsked += 1
         
-        let selectedQuestionDict = trivia[indexOfSelectedQuestion]
+        let selectedQuestionDict = triviaProvider.trivia[indexOfSelectedQuestion]
         let correctAnswer = selectedQuestionDict["Answer"]
         
         if (sender === trueButton &&  correctAnswer == "True") || (sender === falseButton && correctAnswer == "False") {
