@@ -25,8 +25,10 @@ class ViewController: UIViewController {
     
     
     @IBOutlet weak var questionField: UILabel!
-    @IBOutlet weak var trueButton: UIButton!
-    @IBOutlet weak var falseButton: UIButton!
+    @IBOutlet weak var option1Button: UIButton!
+    @IBOutlet weak var option2Button: UIButton!
+    @IBOutlet weak var option3Button: UIButton!
+    @IBOutlet weak var option4Button: UIButton!
     @IBOutlet weak var playAgainButton: UIButton!
     
 
@@ -35,7 +37,7 @@ class ViewController: UIViewController {
         loadGameStartSound()
         // Start game
         playGameStartSound()
-        displayQuestion()
+        displayQuestionAndOptions()
     }
 
     override func didReceiveMemoryWarning() {
@@ -43,17 +45,25 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    func displayQuestion() {
+    func displayQuestionAndOptions() {
         indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaProvider.trivia.count)
         let questionDictionary = triviaProvider.trivia[indexOfSelectedQuestion]
         questionField.text = questionDictionary["Question"]
+        option1Button.setTitle(questionDictionary["Option 1"], for: .normal)
+        option2Button.setTitle(questionDictionary["Option 2"], for: .normal)
+        option3Button.setTitle(questionDictionary["Option 3"], for: .normal)
+        option4Button.setTitle(questionDictionary["Option 4"], for: .normal)
+        
         playAgainButton.isHidden = true
     }
     
     func displayScore() {
         // Hide the answer buttons
-        trueButton.isHidden = true
-        falseButton.isHidden = true
+        option1Button.backgroundColor = UIColor(red: 12.0/255.0, green: 121.0/255.0, blue: 150.0/255.0, alpha: 0.3)
+        option1Button.setTitleColor(UIColor.init(white: 1.0, alpha: 0.2), for: .normal)
+        option2Button.isHidden = true
+        option3Button.isHidden = true
+        option4Button.isHidden = true
         
         // Display play again button
         playAgainButton.isHidden = false
@@ -69,14 +79,14 @@ class ViewController: UIViewController {
         let selectedQuestionDict = triviaProvider.trivia[indexOfSelectedQuestion]
         let correctAnswer = selectedQuestionDict["Answer"]
         
-        if (sender === trueButton &&  correctAnswer == "True") || (sender === falseButton && correctAnswer == "False") {
+        if (sender === option1Button &&  correctAnswer == "True") || (sender === option2Button && correctAnswer == "False") {
             correctQuestions += 1
             questionField.text = "Correct!"
         } else {
             questionField.text = "Sorry, wrong answer!"
         }
         
-        loadNextRoundWithDelay(seconds: 2)
+        loadNextRoundWithDelay(seconds: 1)
     }
     
     func nextRound() {
@@ -85,14 +95,16 @@ class ViewController: UIViewController {
             displayScore()
         } else {
             // Continue game
-            displayQuestion()
+            displayQuestionAndOptions()
         }
     }
     
     @IBAction func playAgain() {
         // Show the answer buttons
-        trueButton.isHidden = false
-        falseButton.isHidden = false
+        option1Button.isHidden = false
+        option2Button.isHidden = false
+        option3Button.isHidden = false
+        option4Button.isHidden = false
         
         questionsAsked = 0
         correctQuestions = 0
