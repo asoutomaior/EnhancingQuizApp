@@ -20,7 +20,6 @@ class ViewController: UIViewController {
     var gameSound: SystemSoundID = 0
     
     // Create instance of TriviaProvider struct, which includes an array of trivia question/answer dictionaries
-    
     let triviaProvider = TriviaProvider()
     
     
@@ -58,9 +57,11 @@ class ViewController: UIViewController {
     }
     
     func displayScore() {
+        // option1Button.backgroundColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 0.3)
+        // option1Button.setTitleColor(UIColor.init(white: 1.0, alpha: 0.2), for: .normal)
+
         // Hide the answer buttons
-        option1Button.backgroundColor = UIColor(red: 12.0/255.0, green: 121.0/255.0, blue: 150.0/255.0, alpha: 0.3)
-        option1Button.setTitleColor(UIColor.init(white: 1.0, alpha: 0.2), for: .normal)
+        option1Button.isHidden = true
         option2Button.isHidden = true
         option3Button.isHidden = true
         option4Button.isHidden = true
@@ -79,7 +80,7 @@ class ViewController: UIViewController {
         let selectedQuestionDict = triviaProvider.trivia[indexOfSelectedQuestion]
         let correctAnswer = selectedQuestionDict["Answer"]
         
-        if (sender === option1Button &&  correctAnswer == "True") || (sender === option2Button && correctAnswer == "False") {
+        if (sender === option1Button &&  correctAnswer == "1") || (sender === option2Button && correctAnswer == "2") || (sender === option3Button && correctAnswer == "3") || (sender === option4Button && correctAnswer == "4") {
             correctQuestions += 1
             questionField.text = "Correct!"
         } else {
@@ -118,6 +119,7 @@ class ViewController: UIViewController {
     func loadNextRoundWithDelay(seconds: Int) {
         // Converts a delay in seconds to nanoseconds as signed 64 bit integer
         let delay = Int64(NSEC_PER_SEC * UInt64(seconds))
+        
         // Calculates a time value to execute the method given current time and delay
         let dispatchTime = DispatchTime.now() + Double(delay) / Double(NSEC_PER_SEC)
         
