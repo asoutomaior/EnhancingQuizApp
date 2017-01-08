@@ -92,7 +92,7 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
-                                    <action selector="playAgain" destination="BYZ-38-t0r" eventType="touchUpInside" id="klz-B2-JAN"/>
+                                    <action selector="nextOrPlayAgain" destination="BYZ-38-t0r" eventType="touchUpInside" id="jWL-KJ-dac"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sample Question" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="7" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I3V-ih-1Ky">
@@ -149,11 +149,11 @@
                     </view>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <connections>
+                        <outlet property="nextOrPlayAgainButton" destination="K17-uy-MvB" id="kbv-LH-fKf"/>
                         <outlet property="option1Button" destination="J1V-MS-ECi" id="rJt-2Q-XZx"/>
                         <outlet property="option2Button" destination="AS4-HX-g9f" id="6Bb-JT-Adi"/>
                         <outlet property="option3Button" destination="Ske-4T-mAB" id="Ehd-fh-c4C"/>
                         <outlet property="option4Button" destination="UC0-14-8TG" id="TEu-ao-af1"/>
-                        <outlet property="playAgainButton" destination="K17-uy-MvB" id="0Bx-Cm-ye0"/>
                         <outlet property="questionField" destination="I3V-ih-1Ky" id="7UI-o2-ATi"/>
                     </connections>
                 </viewController>

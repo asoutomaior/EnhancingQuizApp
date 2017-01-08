@@ -34,8 +34,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var option2Button: UIButton!
     @IBOutlet weak var option3Button: UIButton!
     @IBOutlet weak var option4Button: UIButton!
-    @IBOutlet weak var playAgainButton: UIButton!
-    
+    @IBOutlet weak var nextOrPlayAgainButton: UIButton!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,26 +61,11 @@ class ViewController: UIViewController {
         option3Button.setTitle(questionDictionary["Option 3"], for: .normal)
         option4Button.setTitle(questionDictionary["Option 4"], for: .normal)
         
-        playAgainButton.isHidden = true
+        // Set up next question button
+        nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
+        nextOrPlayAgainButton.isHidden = true
     }
     
-    func displayScore() {
-        // Hide the answer buttons
-        option1Button.isHidden = true
-        option2Button.isHidden = true
-        option3Button.isHidden = true
-        option4Button.isHidden = true
-        
-        // Display play again button
-        playAgainButton.setTitle("Play Again", for: .normal)
-        playAgainButton.isHidden = false
-        
-        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
-        
-        questionsAsked = 0
-        correctQuestions = 0
-        
-    }
     
     @IBAction func checkAnswer(_ sender: UIButton) {
         // Increment the questions asked counter
@@ -115,10 +99,20 @@ class ViewController: UIViewController {
         }
 
         // Display next question button
-        playAgainButton.setTitle("Next Question", for: .normal)
-        playAgainButton.isHidden = false
+        nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
+        nextOrPlayAgainButton.isHidden = false
         
         // loadNextRoundWithDelay(seconds: 1)
+    }
+    
+    @IBAction func nextOrPlayAgain() {
+        // Show the answer buttons
+        option1Button.isHidden = false
+        option2Button.isHidden = false
+        option3Button.isHidden = false
+        option4Button.isHidden = false
+        
+        nextRound()
     }
     
     func nextRound() {
@@ -131,15 +125,25 @@ class ViewController: UIViewController {
         }
     }
     
-    @IBAction func playAgain() {
-        // Show the answer buttons
-        option1Button.isHidden = false
-        option2Button.isHidden = false
-        option3Button.isHidden = false
-        option4Button.isHidden = false
+    func displayScore() {
+        // Hide the answer buttons
+        option1Button.isHidden = true
+        option2Button.isHidden = true
+        option3Button.isHidden = true
+        option4Button.isHidden = true
         
-        nextRound()
+        // Display play again button
+        nextOrPlayAgainButton.setTitle("Play Again", for: .normal)
+        nextOrPlayAgainButton.isHidden = false
+        
+        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
+        
+        questionsAsked = 0
+        correctQuestions = 0
+        
     }
+    
+
     
 
     
