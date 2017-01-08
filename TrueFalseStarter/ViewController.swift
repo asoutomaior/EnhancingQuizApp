@@ -79,6 +79,9 @@ class ViewController: UIViewController {
         
         let selectedQuestionDict = triviaProvider.trivia[indexOfSelectedQuestion]
         let correctAnswer = selectedQuestionDict["Answer"]
+        let dimmedBkgdColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 0.3)
+        let dimmedTitleColor = UIColor.init(white: 1.0, alpha: 0.2)
+        let fullTitleColor = UIColor.init(white: 1.0, alpha: 1.0)
         
         if (sender === option1Button &&  correctAnswer == "1") || (sender === option2Button && correctAnswer == "2") || (sender === option3Button && correctAnswer == "3") || (sender === option4Button && correctAnswer == "4") {
             correctQuestions += 1
@@ -86,6 +89,28 @@ class ViewController: UIViewController {
         } else {
             questionField.text = "Sorry, wrong answer!"
         }
+        
+        
+        
+        option1Button.backgroundColor = dimmedBkgdColor
+        option1Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option2Button.backgroundColor = dimmedBkgdColor
+        option2Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option3Button.backgroundColor = dimmedBkgdColor
+        option3Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option4Button.backgroundColor = dimmedBkgdColor
+        option4Button.setTitleColor(dimmedTitleColor, for: .normal)
+        
+        if correctAnswer == "1" {
+            option1Button.setTitleColor(fullTitleColor, for: .normal)
+        } else if correctAnswer == "2" {
+            option2Button.setTitleColor(fullTitleColor, for: .normal)
+        } else if correctAnswer == "3" {
+            option3Button.setTitleColor(fullTitleColor, for: .normal)
+        } else if correctAnswer == "4" {
+            option4Button.setTitleColor(fullTitleColor, for: .normal)
+        }
+
         
         loadNextRoundWithDelay(seconds: 1)
     }
