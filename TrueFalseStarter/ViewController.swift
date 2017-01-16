@@ -12,7 +12,7 @@ import AudioToolbox
 
 class ViewController: UIViewController {
     
-    let questionsPerRound = 4
+    let questionsPerRound = 10
     var questionsAsked = 0
     var correctQuestions = 0
     var indexOfSelectedQuestion: Int = 0
@@ -25,8 +25,14 @@ class ViewController: UIViewController {
     let fullTitleColor = UIColor.init(white: 1.0, alpha: 1.0)
     
     
-    // Create instance of TriviaProvider struct, which includes an array of trivia question/answer dictionaries
+    // Instance of TriviaProvider struct, which includes an array of trivia question/answer dictionaries
     let triviaProvider = TriviaProvider()
+    
+    // Empty array to hold non-repeating random numbers
+    var nonRepeatingRandomNumbers: [Int] = []
+    
+    var numberIsRepeat = Bool()
+    
     
     
     @IBOutlet weak var questionField: UILabel!
@@ -35,10 +41,12 @@ class ViewController: UIViewController {
     @IBOutlet weak var option3Button: UIButton!
     @IBOutlet weak var option4Button: UIButton!
     @IBOutlet weak var nextOrPlayAgainButton: UIButton!
-
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         loadGameStartSound()
+        
         // Start game
         playGameStartSound()
         displayQuestionAndOptions()
@@ -49,21 +57,27 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+  
+    
+    
     func displayQuestionAndOptions() {
         
-        buttonsDisplayFullColor()
+        // Generate non-repeating random number
+        generateAndCheckNonRepeatingNumber()
         
-        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaProvider.trivia.count)
+        // Set up answer options buttons
         let questionDictionary = triviaProvider.trivia[indexOfSelectedQuestion]
         questionField.text = questionDictionary["Question"]
         option1Button.setTitle(questionDictionary["Option 1"], for: .normal)
         option2Button.setTitle(questionDictionary["Option 2"], for: .normal)
         option3Button.setTitle(questionDictionary["Option 3"], for: .normal)
         option4Button.setTitle(questionDictionary["Option 4"], for: .normal)
-        
+                
         // Set up next question button
         nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
         nextOrPlayAgainButton.isHidden = true
+                
+        
     }
     
     
@@ -105,6 +119,7 @@ class ViewController: UIViewController {
         // loadNextRoundWithDelay(seconds: 1)
     }
     
+    
     @IBAction func nextOrPlayAgain() {
         // Show the answer buttons
         option1Button.isHidden = false
@@ -113,7 +128,9 @@ class ViewController: UIViewController {
         option4Button.isHidden = false
         
         nextRound()
+        buttonsDisplayFullColor()
     }
+    
     
     func nextRound() {
         if questionsAsked == questionsPerRound {
@@ -124,6 +141,7 @@ class ViewController: UIViewController {
             displayQuestionAndOptions()
         }
     }
+    
     
     func displayScore() {
         // Hide the answer buttons
@@ -141,11 +159,76 @@ class ViewController: UIViewController {
         questionsAsked = 0
         correctQuestions = 0
         
+        // Reset random numbers collection
+        nonRepeatingRandomNumbers = []
+        
     }
     
 
     
-
+    func buttonsDisplayDimmed() {
+        option1Button.backgroundColor = dimmedBkgdColor
+        option1Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option2Button.backgroundColor = dimmedBkgdColor
+        option2Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option3Button.backgroundColor = dimmedBkgdColor
+        option3Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option4Button.backgroundColor = dimmedBkgdColor
+        option4Button.setTitleColor(dimmedTitleColor, for: .normal)
+    }
+    
+    func buttonsDisplayFullColor() {
+        option1Button.backgroundColor = fullBkgdColor
+        option1Button.setTitleColor(fullTitleColor, for: .normal)
+        option2Button.backgroundColor = fullBkgdColor
+        option2Button.setTitleColor(fullTitleColor, for: .normal)
+        option3Button.backgroundColor = fullBkgdColor
+        option3Button.setTitleColor(fullTitleColor, for: .normal)
+        option4Button.backgroundColor = fullBkgdColor
+        option4Button.setTitleColor(fullTitleColor, for: .normal)
+    }
+    
+    
+    func generateAndCheckNonRepeatingNumber() {
+        // Generate random number
+        indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaProvider.trivia.count)
+        print("new random number: \(indexOfSelectedQuestion)")
+        
+        // Check if it is a repeat number
+        checkIfNumberIsRepeat()
+        
+        // If it is a repeat, generate new numbers until number is not a repeat
+        while numberIsRepeat {
+            print("generate one more number")
+            indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaProvider.trivia.count)
+            print("new number is: \(indexOfSelectedQuestion)")
+            
+            numberIsRepeat = false
+            print("check new number")
+            checkIfNumberIsRepeat()
+        }
+        
+        // Add number to the collection of unique numbers
+        nonRepeatingRandomNumbers.append(indexOfSelectedQuestion)
+        print("new number appended to the array: \(indexOfSelectedQuestion)")
+        print("updated array: \(nonRepeatingRandomNumbers)")
+        
+    }
+    
+    
+    func checkIfNumberIsRepeat() {
+        numberIsRepeat = false
+        for randomNumber in nonRepeatingRandomNumbers {
+            if randomNumber == indexOfSelectedQuestion {
+                numberIsRepeat = true
+                print("number is repeat")
+            }
+        }
+    }
+    
+    
+    
+    
     
     // MARK: Helper Methods
     
@@ -172,27 +255,6 @@ class ViewController: UIViewController {
         AudioServicesPlaySystemSound(gameSound)
     }
     
-    func buttonsDisplayDimmed() {
-        option1Button.backgroundColor = dimmedBkgdColor
-        option1Button.setTitleColor(dimmedTitleColor, for: .normal)
-        option2Button.backgroundColor = dimmedBkgdColor
-        option2Button.setTitleColor(dimmedTitleColor, for: .normal)
-        option3Button.backgroundColor = dimmedBkgdColor
-        option3Button.setTitleColor(dimmedTitleColor, for: .normal)
-        option4Button.backgroundColor = dimmedBkgdColor
-        option4Button.setTitleColor(dimmedTitleColor, for: .normal)
-    }
-    
-    func buttonsDisplayFullColor() {
-        option1Button.backgroundColor = fullBkgdColor
-        option1Button.setTitleColor(fullTitleColor, for: .normal)
-        option2Button.backgroundColor = fullBkgdColor
-        option2Button.setTitleColor(fullTitleColor, for: .normal)
-        option3Button.backgroundColor = fullBkgdColor
-        option3Button.setTitleColor(fullTitleColor, for: .normal)
-        option4Button.backgroundColor = fullBkgdColor
-        option4Button.setTitleColor(fullTitleColor, for: .normal)
-    }
     
 }
 
