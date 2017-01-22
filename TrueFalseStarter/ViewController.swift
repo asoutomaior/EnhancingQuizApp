@@ -18,24 +18,31 @@ class ViewController: UIViewController {
     var indexOfSelectedQuestion: Int = 0
     
     var gameSound: SystemSoundID = 0
+    var correctAnswerSound: SystemSoundID = 0
+    var wrongAnswerSound: SystemSoundID = 0
     
-    let dimmedBkgdColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 0.3)
-    let dimmedTitleColor = UIColor.init(white: 1.0, alpha: 0.2)
-    let fullBkgdColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 1.0)
-    let fullTitleColor = UIColor.init(white: 1.0, alpha: 1.0)
+    // Button colors
+    let dimmedButtonBkgdColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 0.3)
+    let dimmedButtonTitleColor = UIColor.init(white: 1.0, alpha: 0.2)
+    let fullButtonBkgdColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 1.0)
+    let fullButtonTitleColor = UIColor.init(white: 1.0, alpha: 1.0)
     
+    // Answer text colors
+    let wrongAnswerColor = UIColor(red: 255/255, green: 162/255, blue: 83/255, alpha: 1.0)
+    let correctAnswerColor = UIColor(red: 0/255, green: 147/255, blue: 135/255, alpha: 1.0)
     
-    // Instance of TriviaProvider struct, which includes an array of trivia question/answer dictionaries
+    // Instance of TriviaProvider struct, includes an array of trivia question/answer dictionaries
     let triviaProvider = TriviaProvider()
     
     // Empty array to hold non-repeating random numbers
     var nonRepeatingRandomNumbers: [Int] = []
     
+    // Non-repeating random number indicator
     var numberIsRepeat = Bool()
     
     
-    
     @IBOutlet weak var questionField: UILabel!
+    @IBOutlet weak var answerField: UILabel!
     @IBOutlet weak var option1Button: UIButton!
     @IBOutlet weak var option2Button: UIButton!
     @IBOutlet weak var option3Button: UIButton!
@@ -46,10 +53,14 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadGameStartSound()
+        loadCorrectAnswerSound()
+        loadWrongAnswerSound()
         
         // Start game
         playGameStartSound()
         displayQuestionAndOptions()
+        
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -62,6 +73,10 @@ class ViewController: UIViewController {
     
     func displayQuestionAndOptions() {
         
+        print("button height is: \(option4Button.frame.size.height)")
+        print("button width is: \(option4Button.frame.size.width)")
+        print("button size is: \(option4Button.frame.size)")
+        
         // Generate non-repeating random number
         generateAndCheckNonRepeatingNumber()
         
@@ -71,13 +86,24 @@ class ViewController: UIViewController {
         option1Button.setTitle(questionDictionary["Option 1"], for: .normal)
         option2Button.setTitle(questionDictionary["Option 2"], for: .normal)
         option3Button.setTitle(questionDictionary["Option 3"], for: .normal)
+        
+//        if questionDictionary["Option 4"] == nil {
+//          option4Button.backgroundColor = dimmedBkgdColor
+//          option4Button.frame.size = CGSize(width: 70, height: 60)
+//            
+//            print("button height2 is: \(option4Button?.frame.size.height)")
+//            print("button width2 is: \(option4Button?.frame.size.width)")
+//            print("button size2 is: \(option4Button?.frame.size)")
+//            
+//            print("There's nothin' here!!")
+//        }
+        
         option4Button.setTitle(questionDictionary["Option 4"], for: .normal)
-                
+        
         // Set up next question button
         nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
         nextOrPlayAgainButton.isHidden = true
-                
-        
+        answerField.isHidden = true
     }
     
     
@@ -87,29 +113,36 @@ class ViewController: UIViewController {
         
         let selectedQuestionDict = triviaProvider.trivia[indexOfSelectedQuestion]
         let correctAnswer = selectedQuestionDict["Answer"]
-
         
         if (sender === option1Button &&  correctAnswer == "1") ||
             (sender === option2Button && correctAnswer == "2") ||
             (sender === option3Button && correctAnswer == "3") ||
             (sender === option4Button && correctAnswer == "4") {
             correctQuestions += 1
-            questionField.text = "Correct!"
+            answerField.textColor = correctAnswerColor
+            answerField.text = "Yes! That's correct!! "
+            answerField.isHidden = false
+            playCorrectAnswerSound()
+            
         } else {
-            questionField.text = "Sorry, wrong answer!"
+            answerField.textColor = wrongAnswerColor
+            answerField.text = "Nope! this is the answer..."
+            answerField.isHidden = false
+            playWrongAnswerSound()
         }
         
+        // Dim the button colors
         buttonsDisplayDimmed()
-
         
+        // Highlight button title text color on correct answers
         if correctAnswer == "1" {
-            option1Button.setTitleColor(fullTitleColor, for: .normal)
+            option1Button.setTitleColor(fullButtonTitleColor, for: .normal)
         } else if correctAnswer == "2" {
-            option2Button.setTitleColor(fullTitleColor, for: .normal)
+            option2Button.setTitleColor(fullButtonTitleColor, for: .normal)
         } else if correctAnswer == "3" {
-            option3Button.setTitleColor(fullTitleColor, for: .normal)
+            option3Button.setTitleColor(fullButtonTitleColor, for: .normal)
         } else if correctAnswer == "4" {
-            option4Button.setTitleColor(fullTitleColor, for: .normal)
+            option4Button.setTitleColor(fullButtonTitleColor, for: .normal)
         }
 
         // Display next question button
@@ -135,6 +168,7 @@ class ViewController: UIViewController {
     func nextRound() {
         if questionsAsked == questionsPerRound {
             // Game is over
+            answerField.isHidden = true
             displayScore()
         } else {
             // Continue game
@@ -167,25 +201,25 @@ class ViewController: UIViewController {
 
     
     func buttonsDisplayDimmed() {
-        option1Button.backgroundColor = dimmedBkgdColor
-        option1Button.setTitleColor(dimmedTitleColor, for: .normal)
-        option2Button.backgroundColor = dimmedBkgdColor
-        option2Button.setTitleColor(dimmedTitleColor, for: .normal)
-        option3Button.backgroundColor = dimmedBkgdColor
-        option3Button.setTitleColor(dimmedTitleColor, for: .normal)
-        option4Button.backgroundColor = dimmedBkgdColor
-        option4Button.setTitleColor(dimmedTitleColor, for: .normal)
+        option1Button.backgroundColor = dimmedButtonBkgdColor
+        option1Button.setTitleColor(dimmedButtonTitleColor, for: .normal)
+        option2Button.backgroundColor = dimmedButtonBkgdColor
+        option2Button.setTitleColor(dimmedButtonTitleColor, for: .normal)
+        option3Button.backgroundColor = dimmedButtonBkgdColor
+        option3Button.setTitleColor(dimmedButtonTitleColor, for: .normal)
+        option4Button.backgroundColor = dimmedButtonBkgdColor
+        option4Button.setTitleColor(dimmedButtonTitleColor, for: .normal)
     }
     
     func buttonsDisplayFullColor() {
-        option1Button.backgroundColor = fullBkgdColor
-        option1Button.setTitleColor(fullTitleColor, for: .normal)
-        option2Button.backgroundColor = fullBkgdColor
-        option2Button.setTitleColor(fullTitleColor, for: .normal)
-        option3Button.backgroundColor = fullBkgdColor
-        option3Button.setTitleColor(fullTitleColor, for: .normal)
-        option4Button.backgroundColor = fullBkgdColor
-        option4Button.setTitleColor(fullTitleColor, for: .normal)
+        option1Button.backgroundColor = fullButtonBkgdColor
+        option1Button.setTitleColor(fullButtonTitleColor, for: .normal)
+        option2Button.backgroundColor = fullButtonBkgdColor
+        option2Button.setTitleColor(fullButtonTitleColor, for: .normal)
+        option3Button.backgroundColor = fullButtonBkgdColor
+        option3Button.setTitleColor(fullButtonTitleColor, for: .normal)
+        option4Button.backgroundColor = fullButtonBkgdColor
+        option4Button.setTitleColor(fullButtonTitleColor, for: .normal)
     }
     
     
@@ -246,14 +280,38 @@ class ViewController: UIViewController {
     }
     
     func loadGameStartSound() {
-        let pathToSoundFile = Bundle.main.path(forResource: "GameSound", ofType: "wav")
+        let pathToSoundFile = Bundle.main.path(forResource: "GameSound", ofType: "mp3")
         let soundURL = URL(fileURLWithPath: pathToSoundFile!)
         AudioServicesCreateSystemSoundID(soundURL as CFURL, &gameSound)
     }
     
+    
+    func loadCorrectAnswerSound() {
+        let pathToSoundFile = Bundle.main.path(forResource: "CorrectAnswerSound", ofType: "mp3")
+        let soundURL = URL(fileURLWithPath: pathToSoundFile!)
+        AudioServicesCreateSystemSoundID(soundURL as CFURL, &correctAnswerSound)
+    }
+    
+    func loadWrongAnswerSound() {
+        let pathToSoundFile = Bundle.main.path(forResource: "WrongAnswerSound", ofType: "mp3")
+        let soundURL = URL(fileURLWithPath: pathToSoundFile!)
+        AudioServicesCreateSystemSoundID(soundURL as CFURL, &wrongAnswerSound)
+    }
+    
+    
     func playGameStartSound() {
         AudioServicesPlaySystemSound(gameSound)
     }
+    
+    func playCorrectAnswerSound() {
+        AudioServicesPlaySystemSound(correctAnswerSound)
+    }
+    
+    func playWrongAnswerSound() {
+        AudioServicesPlaySystemSound(wrongAnswerSound)
+    }
+    
+    
     
     
 }
