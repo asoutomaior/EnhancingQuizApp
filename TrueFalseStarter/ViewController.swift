@@ -52,6 +52,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        // Load sounds
         loadGameStartSound()
         loadCorrectAnswerSound()
         loadWrongAnswerSound()
@@ -59,8 +60,6 @@ class ViewController: UIViewController {
         // Start game
         playGameStartSound()
         displayQuestionAndOptions()
-        
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -68,11 +67,8 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-  
-    
     
     func displayQuestionAndOptions() {
-        
         print("button height is: \(option4Button.frame.size.height)")
         print("button width is: \(option4Button.frame.size.width)")
         print("button size is: \(option4Button.frame.size)")
@@ -80,6 +76,15 @@ class ViewController: UIViewController {
         // Generate non-repeating random number
         generateAndCheckNonRepeatingNumber()
         
+        // Ensure question label is visble after DisplayScore view
+        questionField.isHidden = false
+
+        // Ensure buttons are re-enabled after CheckAnswer view
+        option1Button.isEnabled = true
+        option2Button.isEnabled = true
+        option3Button.isEnabled = true
+        option4Button.isEnabled = true
+
         // Set up answer options buttons
         let questionDictionary = triviaProvider.trivia[indexOfSelectedQuestion]
         questionField.text = questionDictionary["Question"]
@@ -123,7 +128,6 @@ class ViewController: UIViewController {
             answerField.text = "Yes! That's correct!! "
             answerField.isHidden = false
             playCorrectAnswerSound()
-            
         } else {
             answerField.textColor = wrongAnswerColor
             answerField.text = "Nope! this is the answer..."
@@ -144,6 +148,12 @@ class ViewController: UIViewController {
         } else if correctAnswer == "4" {
             option4Button.setTitleColor(fullButtonTitleColor, for: .normal)
         }
+        
+        // Disable buttons so app won't crash if user presses buttons in this view
+        option1Button.isEnabled = false
+        option2Button.isEnabled = false
+        option3Button.isEnabled = false
+        option4Button.isEnabled = false
 
         // Display next question button
         nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
@@ -183,22 +193,36 @@ class ViewController: UIViewController {
         option2Button.isHidden = true
         option3Button.isHidden = true
         option4Button.isHidden = true
+        questionField.isHidden = true
+        answerField.isHidden = false
+        answerField.textColor = wrongAnswerColor
+        
         
         // Display play again button
         nextOrPlayAgainButton.setTitle("Play Again", for: .normal)
         nextOrPlayAgainButton.isHidden = false
         
-        questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
+        let percentScore: Double = Double(correctQuestions) / Double(questionsPerRound) * 100.0
         
+        switch (percentScore) {
+        case 0..<40: answerField.text = "\(Int(percentScore))%...\nYou must be a cat lover!"
+        case 40..<80: answerField.text = "\(Int(percentScore))%...\nHmmm... Not bad!"
+        case 80...100: answerField.text = "\(Int(percentScore))%...\nYo dawg, dat was da bomb! "
+        default: answerField.text = ""
+        }
+        
+        
+        
+        // questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
+        
+        // Reset question counts
         questionsAsked = 0
         correctQuestions = 0
         
         // Reset random numbers collection
         nonRepeatingRandomNumbers = []
-        
     }
     
-
     
     func buttonsDisplayDimmed() {
         option1Button.backgroundColor = dimmedButtonBkgdColor
@@ -246,7 +270,6 @@ class ViewController: UIViewController {
         nonRepeatingRandomNumbers.append(indexOfSelectedQuestion)
         print("new number appended to the array: \(indexOfSelectedQuestion)")
         print("updated array: \(nonRepeatingRandomNumbers)")
-        
     }
     
     
@@ -259,8 +282,6 @@ class ViewController: UIViewController {
             }
         }
     }
-    
-    
     
     
     
@@ -310,9 +331,5 @@ class ViewController: UIViewController {
     func playWrongAnswerSound() {
         AudioServicesPlaySystemSound(wrongAnswerSound)
     }
-    
-    
-    
-    
 }
 
