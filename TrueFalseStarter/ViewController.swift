@@ -11,15 +11,17 @@ import GameKit
 import AudioToolbox
 
 class ViewController: UIViewController {
-    
+    // Game variables
     let questionsPerRound = 10
     var questionsAsked = 0
     var correctQuestions = 0
     var indexOfSelectedQuestion: Int = 0
     
+    // Sounds
     var gameSound: SystemSoundID = 0
     var correctAnswerSound: SystemSoundID = 0
     var wrongAnswerSound: SystemSoundID = 0
+    var nextAnswerSound: SystemSoundID = 0
     
     // Button colors
     let dimmedButtonBkgdColor = UIColor(red: 12/255, green: 121/255, blue: 150/255, alpha: 0.3)
@@ -40,15 +42,25 @@ class ViewController: UIViewController {
     // Non-repeating random number indicator
     var numberIsRepeat = Bool()
     
+    // Counter
+    var timer = Timer()
+    var counter: Int = Int()
     
+    // Labels and buttons
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet weak var answerField: UILabel!
+    @IBOutlet weak var timerField: UILabel!
     @IBOutlet weak var option1Button: UIButton!
     @IBOutlet weak var option2Button: UIButton!
     @IBOutlet weak var option3Button: UIButton!
     @IBOutlet weak var option4Button: UIButton!
     @IBOutlet weak var nextOrPlayAgainButton: UIButton!
-    
+
+    // Height and space constraints
+    @IBOutlet weak var button3HeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var button3TopSpaceConstraint: NSLayoutConstraint!
+    @IBOutlet weak var button4HeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var button4TopSpaceConstraint: NSLayoutConstraint!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -56,6 +68,7 @@ class ViewController: UIViewController {
         loadGameStartSound()
         loadCorrectAnswerSound()
         loadWrongAnswerSound()
+        loadNextAnswerSound()
         
         // Start game
         playGameStartSound()
@@ -66,44 +79,51 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    
+
     func displayQuestionAndOptions() {
-        print("button height is: \(option4Button.frame.size.height)")
-        print("button width is: \(option4Button.frame.size.width)")
-        print("button size is: \(option4Button.frame.size)")
+        // Reset and start timer
+        counter = 15
+        updateTimer()
         
         // Generate non-repeating random number
         generateAndCheckNonRepeatingNumber()
         
         // Ensure question label is visble after DisplayScore view
         questionField.isHidden = false
+        
+        // Ensure timer label is visible
+        timerField.isHidden = false
 
         // Ensure buttons are re-enabled after CheckAnswer view
         option1Button.isEnabled = true
         option2Button.isEnabled = true
         option3Button.isEnabled = true
         option4Button.isEnabled = true
-
+        
         // Set up answer options buttons
         let questionDictionary = triviaProvider.trivia[indexOfSelectedQuestion]
         questionField.text = questionDictionary["Question"]
         option1Button.setTitle(questionDictionary["Option 1"], for: .normal)
         option2Button.setTitle(questionDictionary["Option 2"], for: .normal)
         option3Button.setTitle(questionDictionary["Option 3"], for: .normal)
-        
-//        if questionDictionary["Option 4"] == nil {
-//          option4Button.backgroundColor = dimmedBkgdColor
-//          option4Button.frame.size = CGSize(width: 70, height: 60)
-//            
-//            print("button height2 is: \(option4Button?.frame.size.height)")
-//            print("button width2 is: \(option4Button?.frame.size.width)")
-//            print("button size2 is: \(option4Button?.frame.size)")
-//            
-//            print("There's nothin' here!!")
-//        }
-        
         option4Button.setTitle(questionDictionary["Option 4"], for: .normal)
+        
+        // Enables mix of 3 and 4 choice questions, while re-spacing UI elements
+        if questionDictionary["Option 3"] == nil {
+            button3HeightConstraint.constant = 0
+            button3TopSpaceConstraint.constant = 0
+        } else {
+            button3HeightConstraint.constant = 50
+            button3TopSpaceConstraint.constant = 35
+        }
+        
+        if questionDictionary["Option 4"] == nil {
+            button4HeightConstraint.constant = 0
+            button4TopSpaceConstraint.constant = 0
+        } else {
+            button4HeightConstraint.constant = 50
+            button4TopSpaceConstraint.constant = 35
+        }
         
         // Set up next question button
         nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
@@ -111,27 +131,35 @@ class ViewController: UIViewController {
         answerField.isHidden = true
     }
     
-    
     @IBAction func checkAnswer(_ sender: UIButton) {
+        // Stop timer and hide timer field
+        counter = -1
+        timerField.isHidden = true
+        
+        // Show answer field
+        answerField.isHidden = false
+        
         // Increment the questions asked counter
         questionsAsked += 1
         
+        // Extract the corret answer from TriviaProvider struct instance
         let selectedQuestionDict = triviaProvider.trivia[indexOfSelectedQuestion]
         let correctAnswer = selectedQuestionDict["Answer"]
         
+        // Check if selected answer is the correct one and display the result
         if (sender === option1Button &&  correctAnswer == "1") ||
             (sender === option2Button && correctAnswer == "2") ||
             (sender === option3Button && correctAnswer == "3") ||
             (sender === option4Button && correctAnswer == "4") {
             correctQuestions += 1
             answerField.textColor = correctAnswerColor
-            answerField.text = "Yes! That's correct!! "
-            answerField.isHidden = false
+            answerField.text = "Yes! That's correct!!"
+            print("Yes! That's correct!!")
             playCorrectAnswerSound()
         } else {
             answerField.textColor = wrongAnswerColor
-            answerField.text = "Nope! this is the answer..."
-            answerField.isHidden = false
+            answerField.text = "No! this is the answer..."
+            print("Nope! this is the answer...")
             playWrongAnswerSound()
         }
         
@@ -158,10 +186,7 @@ class ViewController: UIViewController {
         // Display next question button
         nextOrPlayAgainButton.setTitle("Next Question", for: .normal)
         nextOrPlayAgainButton.isHidden = false
-        
-        // loadNextRoundWithDelay(seconds: 1)
     }
-    
     
     @IBAction func nextOrPlayAgain() {
         // Show the answer buttons
@@ -169,23 +194,21 @@ class ViewController: UIViewController {
         option2Button.isHidden = false
         option3Button.isHidden = false
         option4Button.isHidden = false
-        
+        // Go to next round, which may be either the score display or next round of questions
         nextRound()
         buttonsDisplayFullColor()
     }
     
-    
     func nextRound() {
         if questionsAsked == questionsPerRound {
-            // Game is over
-            answerField.isHidden = true
+            // Game is over, display score
+            timerField.isHidden = true
             displayScore()
         } else {
-            // Continue game
+            // Continue game, display next round of questions
             displayQuestionAndOptions()
         }
     }
-    
     
     func displayScore() {
         // Hide the answer buttons
@@ -202,18 +225,15 @@ class ViewController: UIViewController {
         nextOrPlayAgainButton.setTitle("Play Again", for: .normal)
         nextOrPlayAgainButton.isHidden = false
         
+        // Display the score percentage with message
         let percentScore: Double = Double(correctQuestions) / Double(questionsPerRound) * 100.0
         
         switch (percentScore) {
-        case 0..<40: answerField.text = "\(Int(percentScore))%...\nYou must be a cat lover!"
-        case 40..<80: answerField.text = "\(Int(percentScore))%...\nHmmm... Not bad!"
-        case 80...100: answerField.text = "\(Int(percentScore))%...\nYo dawg, dat was da bomb! "
+        case 0..<40: answerField.text = "\(Int(percentScore))%...\nYou're a cat person aren't you?!"
+        case 40..<80: answerField.text = "\(Int(percentScore))%...\nHmmm... You should try it again!!"
+        case 80...100: answerField.text = "\(Int(percentScore))%...\nYo dawg, dat was da bomb!!"
         default: answerField.text = ""
         }
-        
-        
-        
-        // questionField.text = "Way to go!\nYou got \(correctQuestions) out of \(questionsPerRound) correct!"
         
         // Reset question counts
         questionsAsked = 0
@@ -222,7 +242,6 @@ class ViewController: UIViewController {
         // Reset random numbers collection
         nonRepeatingRandomNumbers = []
     }
-    
     
     func buttonsDisplayDimmed() {
         option1Button.backgroundColor = dimmedButtonBkgdColor
@@ -246,7 +265,6 @@ class ViewController: UIViewController {
         option4Button.setTitleColor(fullButtonTitleColor, for: .normal)
     }
     
-    
     func generateAndCheckNonRepeatingNumber() {
         // Generate random number
         indexOfSelectedQuestion = GKRandomSource.sharedRandom().nextInt(upperBound: triviaProvider.trivia.count)
@@ -265,7 +283,6 @@ class ViewController: UIViewController {
             print("check new number")
             checkIfNumberIsRepeat()
         }
-        
         // Add number to the collection of unique numbers
         nonRepeatingRandomNumbers.append(indexOfSelectedQuestion)
         print("new number appended to the array: \(indexOfSelectedQuestion)")
@@ -283,6 +300,31 @@ class ViewController: UIViewController {
         }
     }
     
+    func updateTimer() {
+        // Timer countdown with display text
+        if counter > 1 {
+            timerField.textColor = wrongAnswerColor
+            timerField.text = "You have \(counter) seconds to answer"
+            counter -= 1
+            loadNextRoundWithDelay(seconds: 1)
+        } else if counter == 1 {
+            timerField.text = "Time is up!! Next question..."
+            playNextAnswerSound()
+            // Increment the questions asked counter
+            counter -= 1
+            loadNextRoundWithDelay(seconds: 1)
+            print("time is up!")
+        } else if counter == 0 {
+            print("next round!")
+            timer.invalidate()
+            // Increment the questions asked counter
+            questionsAsked += 1
+            // Move to next round once timer reaches 0 min mark
+            nextRound()
+        } else {
+            timer.invalidate()
+        }
+    }
     
     
     // MARK: Helper Methods
@@ -296,7 +338,7 @@ class ViewController: UIViewController {
         
         // Executes the nextRound method at the dispatch time on the main queue
         DispatchQueue.main.asyncAfter(deadline: dispatchTime) {
-            self.nextRound()
+            self.updateTimer()
         }
     }
     
@@ -305,7 +347,6 @@ class ViewController: UIViewController {
         let soundURL = URL(fileURLWithPath: pathToSoundFile!)
         AudioServicesCreateSystemSoundID(soundURL as CFURL, &gameSound)
     }
-    
     
     func loadCorrectAnswerSound() {
         let pathToSoundFile = Bundle.main.path(forResource: "CorrectAnswerSound", ofType: "mp3")
@@ -319,6 +360,11 @@ class ViewController: UIViewController {
         AudioServicesCreateSystemSoundID(soundURL as CFURL, &wrongAnswerSound)
     }
     
+    func loadNextAnswerSound() {
+        let pathToSoundFile = Bundle.main.path(forResource: "NextAnswerSound", ofType: "mp3")
+        let soundURL = URL(fileURLWithPath: pathToSoundFile!)
+        AudioServicesCreateSystemSoundID(soundURL as CFURL, &nextAnswerSound)
+    }
     
     func playGameStartSound() {
         AudioServicesPlaySystemSound(gameSound)
@@ -330,6 +376,10 @@ class ViewController: UIViewController {
     
     func playWrongAnswerSound() {
         AudioServicesPlaySystemSound(wrongAnswerSound)
+    }
+    
+    func playNextAnswerSound() {
+        AudioServicesPlaySystemSound(nextAnswerSound)
     }
 }
 
