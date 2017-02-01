@@ -46,6 +46,13 @@ class ViewController: UIViewController {
     var timer = Timer()
     var counter: Int = Int()
     
+    // Constraint constants
+    let heightConstraintButton: CGFloat = 50
+    let topSpaceConstraintThreeButtons: CGFloat = 51
+    let topSpaceConstraintFourButtons: CGFloat = 34
+    let heightConstraintNoButton: CGFloat = 0
+    let topSpaceConstraintNoButton: CGFloat = 0
+    
     // Labels and buttons
     @IBOutlet weak var questionField: UILabel!
     @IBOutlet weak var answerField: UILabel!
@@ -57,7 +64,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var nextOrPlayAgainButton: UIButton!
 
     // Height and space constraints
-    @IBOutlet weak var button3HeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var button2TopSpaceConstraint: NSLayoutConstraint!
     @IBOutlet weak var button3TopSpaceConstraint: NSLayoutConstraint!
     @IBOutlet weak var button4HeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var button4TopSpaceConstraint: NSLayoutConstraint!
@@ -109,20 +116,16 @@ class ViewController: UIViewController {
         option4Button.setTitle(questionDictionary["Option 4"], for: .normal)
         
         // Enables mix of 3 and 4 choice questions, while re-spacing UI elements
-        if questionDictionary["Option 3"] == nil {
-            button3HeightConstraint.constant = 0
-            button3TopSpaceConstraint.constant = 0
-        } else {
-            button3HeightConstraint.constant = 50
-            button3TopSpaceConstraint.constant = 35
-        }
-        
         if questionDictionary["Option 4"] == nil {
-            button4HeightConstraint.constant = 0
-            button4TopSpaceConstraint.constant = 0
+            button2TopSpaceConstraint.constant = topSpaceConstraintThreeButtons
+            button3TopSpaceConstraint.constant = topSpaceConstraintThreeButtons
+            button4HeightConstraint.constant = heightConstraintNoButton
+            button4TopSpaceConstraint.constant = topSpaceConstraintNoButton
         } else {
-            button4HeightConstraint.constant = 50
-            button4TopSpaceConstraint.constant = 35
+            button2TopSpaceConstraint.constant = topSpaceConstraintFourButtons
+            button3TopSpaceConstraint.constant = topSpaceConstraintFourButtons
+            button4HeightConstraint.constant = heightConstraintButton
+            button4TopSpaceConstraint.constant = topSpaceConstraintFourButtons
         }
         
         // Set up next question button
@@ -229,8 +232,8 @@ class ViewController: UIViewController {
         let percentScore: Double = Double(correctQuestions) / Double(questionsPerRound) * 100.0
         
         switch (percentScore) {
-        case 0..<40: answerField.text = "\(Int(percentScore))%...\nYou're a cat person aren't you?!"
-        case 40..<80: answerField.text = "\(Int(percentScore))%...\nHmmm... You should try it again!!"
+        case 0..<40: answerField.text = "\(Int(percentScore))%...\nYou must be a cat person!!"
+        case 40..<80: answerField.text = "\(Int(percentScore))%...\nHmmm... Try again!!"
         case 80...100: answerField.text = "\(Int(percentScore))%...\nYo dawg, dat was da bomb!!"
         default: answerField.text = ""
         }
